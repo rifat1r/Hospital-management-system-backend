@@ -1,18 +1,25 @@
 const Doctor = require("../models/doctorModel");
-const blackListedToken = require("../models/blackListedToken");
-const UserMethods = require("../utils/userMethods");
+const Appointment = require("../models/appointmentModel");
+const asyncWrapper = require("../middleware/asyncWrapper");
+const { NotFoundError } = require("../errors");
 
-//registers doctor (admin)
-exports.doctorRegister = UserMethods.register(Doctor);
+exports.getAllDoctors = asyncWrapper(async (req, res, next) => {
+  const doctors = await Doctor.find({});
+  res.status(200).json({
+    success: true,
+    count: doctors.length,
+    doctors,
+  });
+});
 
-//login doctor
-exports.doctorLogin = UserMethods.login(Doctor);
-
-//logout doctor and black list the token
-exports.doctorLogout = UserMethods.logout(blackListedToken);
-
-//update doctor profile
-exports.updateProfile = UserMethods.updateProfile(Doctor);
-
-// get doctor profile
-exports.getDoctorProfile = UserMethods.getProfile(Doctor);
+exports.getAppointments = asyncWrapper(async (req, res, next) => {
+  const appointments = await Appointment.find({ doctor: req.user.userId });
+  if (!appointments) {
+    throw new NotFoundError("No appointments found");
+  }
+  res.status(200).json({
+    success: true,
+    count: appointments.length,
+    appointments,
+  });
+});

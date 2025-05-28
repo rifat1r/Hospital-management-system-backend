@@ -7,14 +7,12 @@ const blackListedToken = require("../models/blackListedToken");
 exports.isAuthenticated = asyncWrapper(async (req, res, next) => {
   const token = req.cookies?.token;
   if (!token) {
-    return next(
-      new UnauthenticatedError("Please login to access this resource")
-    );
+    throw new UnauthenticatedError("Please login to access this resource");
   }
   // check whether the token is blacklisted
   const isBlackListed = await blackListedToken.findOne({ token });
   if (isBlackListed) {
-    return next(new UnauthenticatedError("Unauthorized access"));
+    throw new UnauthenticatedError("Unauthorized access");
   }
 
   const decoded = jwt.verify(token, "secret");
@@ -25,14 +23,30 @@ exports.isAuthenticated = asyncWrapper(async (req, res, next) => {
 });
 
 exports.authorizeRoles = (...roles) => {
+  console.log(roles);
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      return next(
-        new UnauthenticatedError(
-          `Role: ${req.user.role} is not allowed to access this resource`
-        )
-      );
+      throw new UnauthenticatedError("Unauthorized Access");
     }
-    next();
+    return next();
   };
 };
+
+exports.authForRegister = asyncWrapper(async (req, res, next) => {
+  //only admin can register doctor and admin
+  const role = req.body.role;
+  const token = req.cookies?.token;
+  if (["admin", "doctor"].includes(role)) {
+    if (!token) {
+      throw new UnauthenticatedError("Unauthorized access");
+    }
+    const decoded = jwt.verify(token, "secret");
+    req.user = decoded; //userId,role
+    if (decoded?.role !== "admin") {
+      throw new UnauthenticatedError("Unauthorized access");
+    }
+    return next();
+  } else {
+    next();
+  }
+});

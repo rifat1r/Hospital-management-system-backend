@@ -1,18 +1,36 @@
-const blackListedToken = require("../models/blackListedToken");
+const asyncWrapper = require("../middleware/asyncWrapper");
 const Patient = require("../models/patientModel");
-const UserMethods = require("../utils/userMethods");
+const Appointment = require("../models/appointmentModel");
 
-//patient register
-exports.patientRegister = UserMethods.register(Patient);
+exports.createAppointment = asyncWrapper(async (req, res, next) => {
+  const doctorId = req.params.doctorId;
+  const appointment = await Appointment.create({
+    ...req.body,
+    patient: req.user.userId,
+    doctor: doctorId,
+  });
+  res.status(201).json({
+    success: true,
+    appointment,
+  });
+});
 
-//patient login
-exports.patientLogin = UserMethods.login(Patient);
+exports.getMyAppointments = asyncWrapper(async (req, res, next) => {
+  const appointments = await Appointment.find({
+    patient: req.user.userId,
+  }).populate("doctor", "name designation");
+  res.status(200).json({
+    success: true,
+    count: appointments.length,
+    appointments,
+  });
+});
 
-//logout patient and black list the token
-exports.patientLogout = UserMethods.logout(blackListedToken);
-
-//update patient profile
-exports.updateProfile = UserMethods.updateProfile(Patient);
-
-// get patient profile
-exports.getPatientProfile = UserMethods.getProfile(Patient);
+exports.getAllPatients = asyncWrapper(async (req, res, next) => {
+  const patients = await Patient.find({});
+  res.status(200).json({
+    success: true,
+    count: patients.length,
+    patients,
+  });
+});

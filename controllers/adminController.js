@@ -1,18 +1,21 @@
+const asyncWrapper = require("../middleware/asyncWrapper");
+const Appointment = require("../models/appointmentModel");
 const Admin = require("../models/adminModel");
-const blackListedToken = require("../models/blackListedToken");
-const UserMethods = require("../utils/userMethods");
 
-//register an admin
-exports.adminRegister = UserMethods.register(Admin);
+exports.getAllAppointments = asyncWrapper(async (req, res, next) => {
+  const appointments = await Appointment.find();
+  res.status(200).json({
+    success: true,
+    count: appointments.length,
+    appointments,
+  });
+});
 
-//admin login
-exports.adminLogin = UserMethods.login(Admin);
-
-//logout admin and black list the token
-exports.adminLogout = UserMethods.logout(blackListedToken);
-
-//update admin profile
-exports.updateProfile = UserMethods.updateProfile(Admin);
-
-// get admin profile
-exports.getAdminProfile = UserMethods.getProfile(Admin);
+exports.getAllAdmins = asyncWrapper(async (req, res, next) => {
+  const admins = await Admin.find({});
+  res.status(200).json({
+    success: true,
+    count: admins.length,
+    admins,
+  });
+});

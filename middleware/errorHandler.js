@@ -16,5 +16,5 @@ module.exports = (err, req, res, next) => {
     customError.statusCode = 400;
   }
 
-  res.status(customError.statusCode).json({ message: customError.message });
+  res.status(customError.statusCode).json({ msg: customError.message });
 };
