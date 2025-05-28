@@ -21,3 +21,5 @@ exports.createAppointment = asyncWrapper(async (req, res, next) => {
     success: true,
   });
 });
+
+// get all appointments

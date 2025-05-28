@@ -195,6 +195,7 @@ exports.deleteProfile = asyncWrapper(async (req, res, next) => {
   const { userId, Model, userRole } = identifyTargetUser(req);
 
   //finally delete the user
+
   const user = await Model.findByIdAndDelete(userId);
   if (!user) {
     throw new NotFoundError("User not found");
